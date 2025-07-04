@@ -239,7 +239,7 @@ int main(void)
 	HAL_UART_Receive_IT(&huart1,(uint8_t *)&data_rx,1); //bat dau dung UART, nhan du lieu bang ngat
 	
 	
-	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,(GPIO_PinState) 1);
+	HAL_GPIO_WritePin (GPIOA,GPIOPIN_4,(GPIO_PinState) 1);
 	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_3,(GPIO_PinState) 0);
   /* USER CODE END 2 */
 
