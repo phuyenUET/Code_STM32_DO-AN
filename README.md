@@ -7,6 +7,7 @@
 ## 🔄 **Tiến độ thực hiện**
 
 ### ✅ Đã hoàn thành
+#### ⚡ Phần mạch PCB - Code STM32F411CEU6 
 
 - ✅ 🔍 **ADC** – Đọc giá trị từ chiết áp  
 - ✅ ⏱️ **Timer1 - Fast PWM** – Gửi xung điều khiển duty cycle cho L293D  
@@ -19,9 +20,11 @@
     ```
 - ✅ 📡 **UART** – Giao tiếp UART hoạt động ổn định  
 - ✅ ⚙️ **Động cơ** – Đã kiểm tra, hoạt động tốt  
-- ✅ 🟢 **Cảm biến tiệm cận 1** – Hoạt động tốt  
+- ✅ 🟢 **Cảm biến tiệm cận 1** – Hoạt động tốt
 
----
+#### 🧑‍💻 YOLO-11n
+- ✅ Model với 2 loại lỗi (chưa tối ưu lắm khiến fps hơi thấp)
+- ✅ Phân loại ID với DeepSort
 
 ### ❌ Chưa hoàn thành
 
@@ -39,7 +42,7 @@
 #### 🤖 Jetson Nano
 
 - ❌ 🔌 **UART giao tiếp với STM32**
-- ❌ 🧠 **Huấn luyện mô hình AI**
+- ❌ 🧠 **Huấn luyện tối ưu lại mô hình AI**
 - ❌ 🚀 **Tối ưu bằng TensorRT**
 - ❌ 🖼️ **Ứng dụng giao diện với Tkinter**
 - ❌ 🌐 **IoT (MQTT/HTTP)**
