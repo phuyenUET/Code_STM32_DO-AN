@@ -28,14 +28,14 @@
 
 ### ❌ Chưa hoàn thành
 
-#### ⚡ Phần cứng
+#### ⚡ Phần mạch PCB - Code STM32F411CEU6 
 
 - ❌ 🛡️ Thêm **diode zener 3.3V** ổn áp bảo vệ chân **GPIOA (PA5, PA6, PA7)**  
   > ⚠️ Hiện nhận mức áp ~4.1V (cao hơn 3.3V tối đa)
 - ❌ 🧭 **Cảm biến tiệm cận 2, 3** – Chưa tích hợp  
-- ❌ 🧨 **Piston / Solenoid x2** – Chưa triển khai  
-- ❌ 🚚 **Mua băng tải** – Chưa thực hiện  
-- ❌ 🧃 **Tạo các mẫu lon nước** – Chưa làm  
+- ❌ 🧨 **Piston / Solenoid x2** – Chưa chọn được loại phù hợp
+- ❌ 🚚 **Mua băng tải** 
+- ❌ 🧃 **Tạo các mẫu lon nước** 
 
 ---
 
@@ -48,5 +48,7 @@
 - ❌ 🌐 **IoT (MQTT/HTTP)**
 - ❌ 💾 **Kết nối cơ sở dữ liệu (SQL)**
 
+---
+- ❌ Hoàn thiện phần cứng và đặt mạch final từ JLCPCB.
 ---
 
