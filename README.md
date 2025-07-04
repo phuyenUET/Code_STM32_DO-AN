@@ -8,7 +8,13 @@
 
 ### ✅ Đã hoàn thành
 #### ⚡ Phần mạch PCB - Code STM32F411CEU6 
-
+- ✅ ⚡ **PCB** - Bản thử đầu hoạt động tốt với các chức năng:
+  - Điều chỉnh động cơ băng tải.
+  - Cảm biến tiệm cận x3
+  - Màn hình LCD hiện thông số
+  - Thiếu phần mạch điêu khiển pistong.
+ 
+    
 - ✅ 🔍 **ADC** – Đọc giá trị từ chiết áp  
 - ✅ ⏱️ **Timer1 - Fast PWM** – Gửi xung điều khiển duty cycle cho L293D  
 - ✅ ⏰ **Timer2 - Interrupt 1s**  
