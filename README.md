@@ -36,7 +36,7 @@
 
 #### ⚡ Phần mạch PCB - Code STM32F411CEU6 
 
-- ❌ 🛡️ Thêm **diode zener 3.3V** ổn áp bảo vệ chân **GPIOA (PA5, PA6, PA7)**  
+- ❌ 🛡️ Thêm **diode zener 3.3V** ổn áp bảo vệ chân **GPIOA (PA5, PA6, PA7) Input 3 cảm biến tiệm cận E18-D80NK**  
   > ⚠️ Hiện nhận mức áp ~4.1V (cao hơn 3.3V tối đa)
 - ❌ 🧭 **Cảm biến tiệm cận 2, 3** – Chưa tích hợp  
 - ❌ 🧨 **Piston / Solenoid x2** – Chưa chọn được loại phù hợp
