@@ -12,9 +12,9 @@
   - Điều chỉnh động cơ băng tải.
   - Cảm biến tiệm cận x3 - đã test
   - Màn hình LCD hiện thông số
-  - Thiếu phần mạch điêu khiển pistong.
+  - Thiếu phần điểu khiển servo MG966R
  
-    
+- ✅   **Code servo MG996R** 
 - ✅ 🔍 **ADC** – Đọc giá trị từ chiết áp  
 - ✅ ⏱️ **Timer1 - Fast PWM** – Gửi xung điều khiển duty cycle cho L293D  
 - ✅ ⏰ **Timer2 - Interrupt 1s**  
@@ -35,7 +35,6 @@
 ### ❌ Chưa hoàn thành
 
 #### ⚡ Phần mạch PCB - Code STM32F411CEU6 
-- ❌ **Code servo MG996R**
 - ❌ 🚚 **Mua băng tải** - 10/7 có
 
 ---
