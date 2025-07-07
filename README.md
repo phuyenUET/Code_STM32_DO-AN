@@ -12,7 +12,8 @@
   - Điều chỉnh động cơ băng tải.
   - Cảm biến tiệm cận x3 - đã test
   - Màn hình LCD hiện thông số
-  - Điều khiển 2 Servo MG966R. ❌Thuật toán xử lý mảng error[100] UART gửi char lỗi qua
+  - Điều khiển 2 Servo MG966R. 
+  - Thuật toán xử lý mảng error[100] UART gửi char lỗi qua.
  
 - ✅   **Code servo MG996R** 
 - ✅ 🔍 **ADC** – Đọc giá trị từ chiết áp  
