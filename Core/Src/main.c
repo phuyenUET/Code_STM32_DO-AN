@@ -48,6 +48,7 @@ I2C_HandleTypeDef hi2c1;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
 
@@ -63,6 +64,7 @@ static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -71,22 +73,41 @@ static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN 0 */
 ///--------------------------------------------BIEN-----------------------------------------------------------------
 volatile uint8_t lcd_update_flag = 0;
-static uint8_t sensor_flag = 0;
+volatile uint8_t sensor1_flag = 0;
+volatile uint8_t sensor2_flag = 0;
+volatile uint8_t sensor3_flag = 0;
 
 /// ----------------------------Tinh toc do dong co (Ngat Timer2 - 1s va EXTI0 de dem xung)-------------------------
 volatile int32_t encoderCount = 0;
 volatile int32_t preCount = 0;
 uint8_t speed = 0;
 char buffer[20];
+void servo_on_off(uint32_t channel);
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == GPIO_PIN_0)  // A thay doi
     {
-        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1))  // B = HIGH thuan
-            encoderCount++;
-        else                                       // B = LOW  nghich
-            encoderCount--;
+			if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1))  // B = HIGH thuan
+				encoderCount++;
+			else                                       // B = LOW  nghich
+				encoderCount--;
+    }
+		else if (GPIO_Pin == GPIO_PIN_6)
+    {
+			if(sensor2_flag == 1)
+			{
+				servo_on_off(TIM_CHANNEL_1);
+				sensor2_flag = 0;
+			}		
+    }
+    else if (GPIO_Pin == GPIO_PIN_7)
+    {
+      if(sensor3_flag == 1)
+			{
+				servo_on_off(TIM_CHANNEL_2);
+				sensor3_flag = 0;
+			}
     }
 }
 
@@ -184,16 +205,32 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(data_rx == '0')
 	{
-		HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,(GPIO_PinState) 1);
+		sensor2_flag = 1;
+		sensor3_flag = 0;
 	}
 	else if(data_rx == '1')
 	{
-		HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,(GPIO_PinState) 0);
+		sensor2_flag = 0;
+		sensor3_flag = 1;
 	}
-	
 	HAL_UART_Receive_IT(&huart1,(uint8_t *)&data_rx,1);
 }
 
+///-----------------------------------Servo MG966R--------------------------------------------------------
+void Set_Servo_Angle(TIM_HandleTypeDef *htim, uint32_t channel, uint8_t angle)
+{
+	//Map angle (0-180) to pulse width (500-2500 counts)
+	//Vi mot count cua settings cua minh la 1us, 0* tuong ung voi xung 500us,180* tuong ung voi 2500us
+	uint32_t pulse_length = map(angle,0,180,500,2500);
+	__HAL_TIM_SET_COMPARE(htim, channel, pulse_length);
+}
+
+void servo_on_off(uint32_t channel)
+{
+	Set_Servo_Angle(&htim3,channel,110);
+	HAL_Delay(3000);
+	Set_Servo_Angle(&htim3,channel,180);
+}
 
 /* USER CODE END 0 */
 
@@ -231,9 +268,15 @@ int main(void)
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_USART1_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 	HAL_TIM_Base_Start_IT(&htim2);	// bat dau ngat timer2
+	
 	HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_1); // bat dau su dung pwm
+	HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_1); // servo 50hz kenh 1	
+	HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_2); // servo 50hz kenh 2
+	Set_Servo_Angle(&htim3,TIM_CHANNEL_1,180);
+	Set_Servo_Angle(&htim3,TIM_CHANNEL_2,180);  
 	
 	CLCD_I2C_Init(&LCD1,&hi2c1,0x4E,20,4); //khai bao i2c_lcd
 	HAL_UART_Receive_IT(&huart1,(uint8_t *)&data_rx,1); //bat dau dung UART, nhan du lieu bang ngat
@@ -260,12 +303,12 @@ int main(void)
 			CLCD_I2C_WriteString(&LCD1, "PNN-K66AT");
 			CLCD_I2C_SetCursor(&LCD1, 0, 1);
 			CLCD_I2C_WriteString(&LCD1, buffer);
-    } 
+    }      
 		
 		///------------------Dung dong co vs cam bien 1 (PA5)-----------------
 		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == GPIO_PIN_RESET)
 		{
-			if (sensor_flag == 0)
+			if (sensor1_flag == 0)
 			{
 				///Cap nhat lai LCD vi timer2 chua het 1s
 				speed = 0;
@@ -275,7 +318,7 @@ int main(void)
 				
 				pwm_set_duty(&htim1, TIM_CHANNEL_1, 0); 
 				HAL_Delay(3000); 
-				sensor_flag = 1; 
+				sensor1_flag = 1; 
 			}
 			else
 			{
@@ -284,7 +327,7 @@ int main(void)
 		}
 		else
 		{
-			sensor_flag = 0;
+			sensor1_flag = 0;
 		}
 		///-------------------------------------------------------------------
 		set_motor(adc_value);
@@ -540,6 +583,59 @@ static void MX_TIM2_Init(void)
 }
 
 /**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 15;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 19999;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+  HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -586,6 +682,7 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
@@ -602,14 +699,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  /*Configure GPIO pins : PA0 PA6 PA7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_6|GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA1 PA5 PA6 PA7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+  /*Configure GPIO pins : PA1 PA5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -624,6 +721,9 @@ static void MX_GPIO_Init(void)
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
