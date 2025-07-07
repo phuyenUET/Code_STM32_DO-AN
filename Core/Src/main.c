@@ -74,8 +74,22 @@ static void MX_TIM3_Init(void);
 ///--------------------------------------------BIEN-----------------------------------------------------------------
 volatile uint8_t lcd_update_flag = 0;
 volatile uint8_t sensor1_flag = 0;
-volatile uint8_t sensor2_flag = 0;
-volatile uint8_t sensor3_flag = 0;
+
+
+///------------------------------------Ham xoa phan tu dau mang error-----------------------------------------------
+char error[100];
+uint8_t error_count = 0;
+volatile uint8_t noerror_flag = 0;
+
+void shift_error_queue(void)
+{
+	if (error_count == 0) return;
+	for (uint8_t i = 0; i < error_count - 1; i++)
+	{
+		error[i] = error[i + 1];
+	}
+	error_count--;
+}
 
 /// ----------------------------Tinh toc do dong co (Ngat Timer2 - 1s va EXTI0 de dem xung)-------------------------
 volatile int32_t encoderCount = 0;
@@ -86,29 +100,42 @@ void servo_on_off(uint32_t channel);
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if (GPIO_Pin == GPIO_PIN_0)  // A thay doi
-    {
-			if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1))  // B = HIGH thuan
-				encoderCount++;
-			else                                       // B = LOW  nghich
-				encoderCount--;
-    }
-		else if (GPIO_Pin == GPIO_PIN_6)
-    {
-			if(sensor2_flag == 1)
+	if (GPIO_Pin == GPIO_PIN_0)  // A thay doi
+	{
+		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1))  // B = HIGH thuan
+			encoderCount++;
+		else                                       // B = LOW  nghich
+			encoderCount--;
+	}
+	else if (GPIO_Pin == GPIO_PIN_6)
+	{
+		if (error_count > 0)
+		{
+			switch(error[0])
 			{
-				servo_on_off(TIM_CHANNEL_1);
-				sensor2_flag = 0;
-			}		
-    }
-    else if (GPIO_Pin == GPIO_PIN_7)
-    {
-      if(sensor3_flag == 1)
+				case '1':
+					servo_on_off(TIM_CHANNEL_1); 
+					shift_error_queue();
+					break;
+				case '0':
+					shift_error_queue();
+					noerror_flag = 1;
+					break;
+			}
+		}
+	}
+	else if (GPIO_Pin == GPIO_PIN_7)
+	{
+		if (error_count > 0 && noerror_flag == 0)
+		{
+			if (error[0] == '2')
 			{
 				servo_on_off(TIM_CHANNEL_2);
-				sensor3_flag = 0;
+				shift_error_queue();
 			}
-    }
+		}
+		noerror_flag = 0;
+	}
 }
 
 
@@ -127,29 +154,29 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 ///--------------------------------Set gia tri PWM chan PA8 (TIMER1)-------------------------------------------------
 void pwm_set_duty(TIM_HandleTypeDef *htim, uint32_t channel, uint8_t duty)
 {
-    if (duty > 100) duty = 100;
+	if (duty > 100) duty = 100;
 
-    uint32_t arr = __HAL_TIM_GET_AUTORELOAD(htim);
+	uint32_t arr = __HAL_TIM_GET_AUTORELOAD(htim);
 
-    uint32_t ccr = (arr + 1) * duty / 100;
+	uint32_t ccr = (arr + 1) * duty / 100;
 
-    switch(channel)
-    {
-        case TIM_CHANNEL_1:
-            __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, ccr);
-            break;
-        case TIM_CHANNEL_2:
-            __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_2, ccr);
-            break;
-        case TIM_CHANNEL_3:
-            __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_3, ccr);
-            break;
-        case TIM_CHANNEL_4:
-            __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_4, ccr);
-            break;
-        default:
-            break;
-    }
+	switch(channel)
+	{
+		case TIM_CHANNEL_1:
+			__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, ccr);
+			break;
+		case TIM_CHANNEL_2:
+			__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_2, ccr);
+			break;
+		case TIM_CHANNEL_3:
+			__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_3, ccr);
+			break;
+		case TIM_CHANNEL_4:
+			__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_4, ccr);
+			break;
+		default:
+			break;
+	}
 }
 
 
@@ -184,36 +211,34 @@ uint32_t map(uint32_t x, uint32_t in_min, uint32_t in_max, uint32_t out_min, uin
 void set_motor(uint16_t adc_value)
 {
 
-    if (adc_value <= 40)
-    {
-        duty = 0;
-    }
-    else if (adc_value >= 4070)
-    {
-        duty = 100;
-    }
-    else
-    {
-        duty = map(adc_value, 40, 4070, 0, 100);
-    }
+	if (adc_value <= 40)
+	{
+		duty = 0;
+	}
+	else if (adc_value >= 4070)
+	{
+		duty = 100;
+	}
+	else
+	{
+		duty = map(adc_value, 40, 4070, 0, 100);
+	}
 
-    pwm_set_duty(&htim1, TIM_CHANNEL_1, duty);
+	pwm_set_duty(&htim1, TIM_CHANNEL_1, duty);
 }
 ///---------------------------------UART voi Jetson Nano-------------------------------------------------
 char data_rx;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(data_rx == '0')
+	if (huart->Instance == USART1)
 	{
-		sensor2_flag = 1;
-		sensor3_flag = 0;
+		if ((data_rx == '0' || data_rx == '1' || data_rx == '2') && error_count < 100)
+		{
+			error[error_count++] = data_rx;
+		}
+
+		HAL_UART_Receive_IT(&huart1, (uint8_t *)&data_rx, 1);
 	}
-	else if(data_rx == '1')
-	{
-		sensor2_flag = 0;
-		sensor3_flag = 1;
-	}
-	HAL_UART_Receive_IT(&huart1,(uint8_t *)&data_rx,1);
 }
 
 ///-----------------------------------Servo MG966R--------------------------------------------------------
@@ -228,7 +253,7 @@ void Set_Servo_Angle(TIM_HandleTypeDef *htim, uint32_t channel, uint8_t angle)
 void servo_on_off(uint32_t channel)
 {
 	Set_Servo_Angle(&htim3,channel,110);
-	HAL_Delay(3000);
+	HAL_Delay(1000);
 	Set_Servo_Angle(&htim3,channel,180);
 }
 
@@ -699,8 +724,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA0 PA6 PA7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_6|GPIO_PIN_7;
+  /*Configure GPIO pin : PA0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -716,6 +741,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA6 PA7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
