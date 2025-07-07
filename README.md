@@ -12,7 +12,7 @@
   - Điều chỉnh động cơ băng tải.
   - Cảm biến tiệm cận x3 - đã test
   - Màn hình LCD hiện thông số
-  - Thiếu phần điểu khiển servo MG966R
+  - Điều khiển 2 Servo MG966R. ❌Thuật toán xử lý mảng error[100] UART gửi char lỗi qua
  
 - ✅   **Code servo MG996R** 
 - ✅ 🔍 **ADC** – Đọc giá trị từ chiết áp  
@@ -26,7 +26,7 @@
     ```
 - ✅ 📡 **UART** – Giao tiếp UART hoạt động ổn định  
 - ✅ ⚙️ **Động cơ** – Đã kiểm tra, hoạt động tốt  
-- ✅ 🟢 **Cảm biến tiệm cận 1** – Hoạt động tốt
+- ✅ 🟢 **Cảm biến tiệm cận 1,2,3** – Hoạt động tốt
 
 #### 🧑‍💻 YOLO-11n
 - ✅ Model với 2 loại lỗi (chưa tối ưu lắm khiến fps hơi thấp)
