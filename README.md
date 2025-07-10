@@ -32,6 +32,7 @@
 
 #### 🤖 Jetson Nano
 - ✅ **UART** - Đã giao tiếp được qua USB TTL CP2102
+- ✅ **Thư viện cần thiết**: ttkbootstrap, torch, torchvision, sqlite3, ultralytics, tkinter, deep-sort-realtime, serial,..
 - ✅ Model với 2 loại lỗi (chưa tối ưu lắm khiến fps hơi thấp)
 - ✅ Phân loại ID với DeepSort
 
