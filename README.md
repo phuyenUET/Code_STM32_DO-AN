@@ -28,21 +28,19 @@
 - ✅ 📡 **UART** – Giao tiếp UART hoạt động ổn định  
 - ✅ ⚙️ **Động cơ** – Đã kiểm tra, hoạt động tốt  
 - ✅ 🟢 **Cảm biến tiệm cận 1,2,3** – Hoạt động tốt
+- ✅ **Băng tải** đã lắp xong
 
-#### 🧑‍💻 YOLO-11n
+#### 🤖 Jetson Nano
+- ✅ **UART** - Đã giao tiếp được qua USB TTL CP2102
 - ✅ Model với 2 loại lỗi (chưa tối ưu lắm khiến fps hơi thấp)
 - ✅ Phân loại ID với DeepSort
 
 ### ❌ Chưa hoàn thành
 
 #### ⚡ Phần mạch PCB - Code STM32F411CEU6 
-- ❌ 🚚 **Mua băng tải** - 10/7 có
-
 ---
-
 #### 🤖 Jetson Nano
 
-- ❌ 🔌 **UART giao tiếp với STM32**
 - ❌ 🧠 **Huấn luyện tối ưu lại mô hình AI**
 - ❌ 🚀 **Tối ưu bằng TensorRT**
 - ❌ 🖼️ **Ứng dụng giao diện với Tkinter**
